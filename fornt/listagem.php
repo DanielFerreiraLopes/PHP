@@ -1,13 +1,31 @@
 <?php
         session_start();
 
+        $_GET = ['nome'];
+        $_GET = ['cpf'];
+        $_GET = ['data_nacimento'];
+
         $conexao = new PDO("mysql:host=localhost;port=3306;dbname=php-crud","root","devisate");
         
         $conexao->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION );
 
-        $comando = $conexao->prepare(" SELECT * FROM cliente");
+        $sql = " SELECT * FROM cliente WHERE ";
+        if (isset($_GET['nome'])) {
+            $sql .=" nome LIKE :nome AND ";
+        }
+        if (isset($_GET['cpf'])) {
+            $sql .=" cpf LIKE :cpf AND ";
+        }
+        if (isset($_GET['data_nacimento'])) {
+            $sql .=" data_de_nacimento LIKE :data_nacimento AND ";
+        }
 
-        $comando->execute();
+        $sql = rtrim($sql, " WHERE ");
+        $sql = rtrim($sql, " AND ");
+
+        $comando = $conexao->prepare($sql);
+
+        $comando->execute(array_filter($_GET));
 
         $cliente = $comando->fetchAll(PDO::FETCH_ASSOC);
 
@@ -43,9 +61,9 @@
         <fieldset class="">
             <legend>Filtros</legend>
             <form action="" class="flex-row  space-30">
-                <input type="text" placeholder="Nome">
-                <input type="number" placeholder="CPF">
-                <input type="date">
+                <input name="nome" type="text" placeholder="Nome">
+                <input name="cpf" type="number" placeholder="CPF">
+                <input name="data_nacimento" type="date">
                 <button type="submit" class="button primary">Buscar</button>
             </form>
         </fieldset>
@@ -67,7 +85,7 @@
                     echo "<td>". $c['id'] ."</td>";
                     echo "<td>". $c['nome'] ."</td>";
                     echo "<td>". $c['cpf'] ."</td>";
-                    echo "<td>". $c['data_de_nacimento'] ."</td>";
+                    echo "<td>" . date('d/m/Y', strtotime($c['data_de_nacimento']))."</td>";
                     echo "<td><a href=''>Editar</a> <br><a href=''>Excluir</a></td>";
                     echo "</tr>";
                 }                       
